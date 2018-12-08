@@ -68,6 +68,12 @@ interface V3GitLabApiProxy extends GitLabApiProxy {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Path("/projects/{projectId}/merge_requests/{mergeRequestIid}/approvals")
+    @Override
+    MergeRequestApprovalStatus getMergeRequestApprovalStatus(@PathParam("projectId") Integer  projectId, @PathParam("mergeRequestIid") Integer mergeRequestId);
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectName}")
     @Override
     Project getProject(@PathParam("projectName") String projectName);

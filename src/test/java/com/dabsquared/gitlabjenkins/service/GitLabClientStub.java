@@ -155,6 +155,11 @@ class GitLabClientStub implements GitLabClient {
     }
 
     @Override
+    public MergeRequestApprovalStatus getMergeRequestApprovalStatus(MergeRequest mr) {
+        return null;
+    }
+
+    @Override
     public List<MergeRequest> getMergeRequests(String projectId, State state, int page, int perPage) {
         return null;
     }

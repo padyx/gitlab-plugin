@@ -2,6 +2,7 @@ package com.dabsquared.gitlabjenkins.publisher;
 
 import com.dabsquared.gitlabjenkins.gitlab.api.GitLabClient;
 import com.dabsquared.gitlabjenkins.gitlab.api.model.MergeRequest;
+import com.dabsquared.gitlabjenkins.gitlab.api.model.MergeRequestApprovalStatus;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Result;
@@ -54,11 +55,30 @@ public class GitLabApproveMergeRequestPublisher extends MergeRequestNotifier {
     @Override
     protected void perform(Run<?, ?> build, TaskListener listener, GitLabClient client, MergeRequest mergeRequest) {
         try {
+            MergeRequestApprovalStatus approvalStatus = client.getMergeRequestApprovalStatus(mergeRequest);
+
+            boolean canApprove = approvalStatus.getUserCanApprove() != null ? approvalStatus.getUserCanApprove() : false;
+            boolean hasApproved = approvalStatus.getUserHasApproved() != null ? approvalStatus.getUserHasApproved() : false;
+
             Result buildResult = build.getResult();
             if (build.getResult() == Result.SUCCESS || (buildResult == Result.UNSTABLE && isApproveUnstableBuilds())) {
-                client.approveMergeRequest(mergeRequest);
+                if(hasApproved){
+                    // Already approved
+                    return;
+                }
+                if(canApprove) {
+                    client.approveMergeRequest(mergeRequest);
+                } else {
+                    String message = String.format(
+                        "Failed to approve merge request '%s' for project '%s'.\n"
+                            + "Are you are an eligible approver for this merge request?", mergeRequest.getIid(), mergeRequest.getProjectId());
+                    listener.getLogger().printf(message);
+                    LOGGER.log(Level.INFO, message);
+                }
             } else {
-                client.unapproveMergeRequest(mergeRequest);
+                if(hasApproved) {
+                    client.unapproveMergeRequest(mergeRequest);
+                }
             }
         } catch (NotFoundException e) {
             String message = String.format(

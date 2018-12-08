@@ -40,6 +40,8 @@ interface GitLabApiProxy {
 
     void unapproveMergeRequest(Integer projectId, Integer mergeRequestId);
 
+    MergeRequestApprovalStatus getMergeRequestApprovalStatus(Integer projectId, Integer mergeRequestId);
+
     List<MergeRequest> getMergeRequests(String projectId, State state, int page, int perPage);
 
     List<Branch> getBranches(String projectId);
